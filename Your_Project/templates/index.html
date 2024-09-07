@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bot Interface</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <!-- Markdown to HTML converter -->
+</head>
+<body>
+<div class="fullscreen-container">
+  <!-- Welcome message section -->
+  <div class="welcome-message" id="welcomeMessage">
+    <h1>Let's START </h1>
+    <h2>your Journey from here...</h2>
+    <p>Feel free to ask anything ;-)</p>
+  </div>
+
+  <!-- Options section -->
+  <div class="options" id="optionsSection">
+    <!-- Dynamic options could be added here if needed -->
+  </div>
+
+  <!-- Message display section -->
+  <div class="message-display" id="messageDisplay">
+    <!-- Messages will be shown here -->
+  </div>
+
+  <!-- Message bar section -->
+  <div class="message-bar">
+    <input type="text" id="userInput" placeholder="Type your message...">
+    <button id="sendBtn">Send</button>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+<script>
+  document.getElementById('sendBtn').onclick = async function() {
+    const userInput = document.getElementById('userInput').value;
+    
+    if (userInput.trim() === '') {
+      return; // Do nothing if input is empty
+    }
+
+    // Display the user's message
+    const userMessageDiv = document.createElement('div');
+    userMessageDiv.className = 'user-message';
+    userMessageDiv.innerHTML = `<div class="message" style="text-align: right;">${userInput}</div>`;
+    document.getElementById('messageDisplay').appendChild(userMessageDiv);
+
+    // Send user input to the server
+    const response = await fetch('/get', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({ 'msg': userInput })
+    });
+    
+    const data = await response.json();
+    const markdownResponse = data.response;
+
+    // Convert Markdown to HTML and display it
+    const botMessageDiv = document.createElement('div');
+    botMessageDiv.className = 'bot-message';
+    botMessageDiv.innerHTML = `<div class="message" style="text-align: left;">${marked.parse(markdownResponse)}</div>`;
+    document.getElementById('messageDisplay').appendChild(botMessageDiv);
+
+    // Clear the input field
+    document.getElementById('userInput').value = '';
+  };
+</script>
+</body>
+</html>
+
+<!-- Markdown Converter: Added <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> 
+ to load the marked.js library for converting Markdown to HTML. -->
